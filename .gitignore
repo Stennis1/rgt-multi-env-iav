@@ -1,0 +1,10 @@
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan.binary
+plan_output.txt
+*.auto.tfvars
+secrets.auto.tfvars
+.DS_Store
