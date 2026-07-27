@@ -14,24 +14,6 @@ jobs:
       matrix:
         environment: [staging, production]
     runs-on: ubuntu-latest
-    # MinIO as a service container - this is the entire "cloud account" this pipeline needs.
-    services:
-      minio:
-        image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
-        ports:
-          - 9000:9000
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-        # Note: MinIO's default entrypoint needs a command; when using the
-        # `services:` shorthand GitHub Actions runs the image's default CMD,
-        # so this image must be built/tagged to auto-start `server /data`
-        # (the official minio/minio image already does this).
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -39,6 +21,19 @@ jobs:
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: "1.11.0"
+
+      # MinIO started directly with `docker run`, not GitHub Actions'
+      # `services:` block - `services:` has no way to pass a container
+      # command, and minio/minio's default CMD is just `minio` with no
+      # subcommand (prints usage and exits), not `server /data`. Same
+      # invocation as `make minio-up` locally.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin \
+            -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e \
+            server /data
 
       - name: Install mc (MinIO client)
         run: |
