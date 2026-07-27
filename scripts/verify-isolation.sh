@@ -15,8 +15,18 @@ fail=0
 
 echo "== Verifying network isolation for '${ENV}' =="
 
+# Probe from a throwaway busybox container sharing the target's network
+# namespace (`--network container:<name>`), rather than `docker exec` into
+# the target itself. The api container runs hashicorp/http-echo, a scratch
+# image with no shell/package manager, so exec-ing a shell into it isn't an
+# option - this approach works regardless of what's inside the target image.
+probe() {
+  local target="$1"
+  docker run --rm --network "container:${target}" busybox:1.36 nc -z -w 3 "${DB_HOST}" "${DB_PORT}" > /dev/null 2>&1
+}
+
 echo -n "[1/2] API (compute tier) -> Postgres:${DB_PORT}  expect SUCCESS ... "
-if docker exec "${API_CONTAINER}" sh -c "command -v nc >/dev/null 2>&1 && nc -z -w 3 ${DB_HOST} ${DB_PORT} || (apk add --no-cache netcat-openbsd >/dev/null 2>&1 && nc -z -w 3 ${DB_HOST} ${DB_PORT})" > /dev/null 2>&1; then
+if probe "${API_CONTAINER}"; then
   echo "PASS (reachable, as expected)"
   pass=$((pass+1))
 else
@@ -25,7 +35,7 @@ else
 fi
 
 echo -n "[2/2] Nginx (edge tier) -> Postgres:${DB_PORT}  expect FAILURE ... "
-if docker exec "${EDGE_CONTAINER}" sh -c "command -v nc >/dev/null 2>&1 && nc -z -w 3 ${DB_HOST} ${DB_PORT} || (apk add --no-cache netcat-openbsd >/dev/null 2>&1 && nc -z -w 3 ${DB_HOST} ${DB_PORT})" > /dev/null 2>&1; then
+if probe "${EDGE_CONTAINER}"; then
   echo "FAIL (edge tier reached the DB - isolation broken!)"
   fail=$((fail+1))
 else

@@ -30,8 +30,7 @@ resource "docker_container" "postgres" {
   }
 
   # deliberately no `ports {}` block - this is the "no public IP" analog
-  memory_swappiness = null
-  cpu_shares         = var.db_cpu_shares
+  cpu_shares = var.db_cpu_shares
 
   healthcheck {
     test     = ["CMD-SHELL", "pg_isready -U ${var.db_user}"]
