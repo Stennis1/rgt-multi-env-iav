@@ -8,3 +8,5 @@ plan_output.txt
 secrets.auto.tfvars
 .DS_Store
 CLAUDE.md
+.claude/
+READ.md
