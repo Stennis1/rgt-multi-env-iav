@@ -67,6 +67,7 @@ environments/staging/    # calls the module with staging-sized inputs
 environments/production/ # calls the module with production-sized inputs
 .github/workflows/       # pr-plan.yml (plan+comment), apply.yml (gated apply)
 scripts/                 # bootstrap-backend.sh, verify-isolation.sh
+architecture/             # AWS design diagram (Path A add-on)
 Makefile                 # local dev shortcuts
 VERIFY.md                # proof-of-isolation walkthrough
 AWS_DESIGN.md             # Path A add-on: AWS design mapping, no deployment
