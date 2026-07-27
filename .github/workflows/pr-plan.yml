@@ -17,7 +17,7 @@ jobs:
     # MinIO as a service container - this is the entire "cloud account" this pipeline needs.
     services:
       minio:
-        image: minio/minio@sha256:REPLACE_WITH_PINNED_DIGEST
+        image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
         ports:
           - 9000:9000
         env:
@@ -58,7 +58,7 @@ jobs:
           terraform validate
 
       - name: tfsec (static analysis)
-        uses: aquasecurity/tfsec-action@b466648d6e39e7c75324f25d83891162a721f2  # v1.0.3
+        uses: aquasecurity/tfsec-action@b466648d6e39e7c75324f25d83891162a721f2d6  # v1.0.3
         with:
           working_directory: environments/${{ matrix.environment }}
 
